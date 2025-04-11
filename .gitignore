@@ -1,0 +1,6 @@
+pqc-evaluation/liboqs
+pqc-evaluation/liboqs-python
+pqc-evaluation/venv
+pqc-evaluation/*.csv
+pqc-evaluation/out
+pqc-evaluation/__pycache__
