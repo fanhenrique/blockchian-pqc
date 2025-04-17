@@ -17,9 +17,7 @@ Para instalar o liboqs e o liboqs-python.
 >Confira as versões em [install.sh](./install.sh)
 
 
-## Execução
-
-### Ambiente virtual
+## Ambiente virtual
 Antes de executar os algoritmos é precisos ativar o ambiente virtual.
 
 ```
@@ -30,6 +28,22 @@ Para desativar o ambiente virtual.
 ```
 deactivate
 ```
+
+## Exemplos
+
+Antes de executar os algoritmos use o exemplos de teste da liboqs-python.
+
+Exemplo de algoritmo de KEM.
+```
+python liboqs-python/examples/kem.py
+```
+
+Exemplo de algoritmo de assinatura digital.
+```
+python liboqs-python/examples/sig.py
+```
+
+## Execução
 
 ### Execução dos algoritmos KEM
 
