@@ -2,7 +2,7 @@ from time import time
 import pandas as pd
 import oqs
 
-def kem_evaluation_times(variant, number):
+def evaluation_times(variant, number):
     
     times_generate_keypair, times_encrypt, times_decrypt = [], [], []
 
@@ -45,18 +45,16 @@ def kem_evaluation_times(variant, number):
         'decrypt': times_decrypt
     })
     
-def kem_evaluation_sizes(variant):
+def evaluation_sizes(variant):
 
-    with oqs.KeyEncapsulation(variant) as client:
-        # print(client.details)
+    with oqs.KeyEncapsulation(variant) as kem:
 
         return {
-            'variant': variant, 
-            'ind_cca2': client.details['is_ind_cca'], 
-            'claimed_nist_level': client.details['claimed_nist_level'], 
-            'length_ciphertext': client.details['length_ciphertext'],
-            'length_public_key': client.details['length_public_key'],
-            'length_secret_key': client.details['length_secret_key'],
-            'length_shared_secret': client.details['length_shared_secret']
+            'variant': variant,
+            'claimed_nist_level': kem.details['claimed_nist_level'], 
+            'length_ciphertext': kem.details['length_ciphertext'],
+            'length_public_key': kem.details['length_public_key'],
+            'length_secret_key': kem.details['length_secret_key'],
+            'length_shared_secret': kem.details['length_shared_secret']
         }
 
