@@ -8,55 +8,61 @@ def one_level(df_all, level, graphics):
 
 def split_mechanisms(input_mechanisms, mechanisms, normalize):
     """
-    Matches user-specified mechanisms (KEM or signature) against available ones using name patterns.
+    Filters and groups mechanisms based on inclusion and exclusion rules.
 
-    This function receives a list of mechanisms provided by the user, a list of available mechanisms
-    (such as those returned by the OQS library), and a normalization dictionary that maps generic names
-    (e.g., "falcon", "frodo-aes") to search patterns.
+    For each mechanism in `input_mechanisms`, applies normalization rules from
+    the `normalize` dictionary to identify matching mechanisms in the `mechanisms` list.
+    Each rule may include patterns to include and/or exclude.
 
-    The patterns can be:
-    - A simple string (checks if it's contained in the mechanism name)
-    - A tuple of strings (checks if all parts are contained in the mechanism name)
-
-    Parameters:
-        input_mechanisms (list[str]): List of mechanism names provided by the user.
-        mechanisms (list[str]): List of all mechanisms available in the system.
-        normalize (dict[str, str | tuple[str, ...]]): Mapping of generic names to search patterns.
+    Args:
+        input_mechanisms (list of str): List of mechanism names to normalize and match.
+        mechanisms (list of str): Full list of available mechanisms to filter.
+        normalize (dict): Dictionary where keys are mechanism names and values are
+            rules containing "include" and "exclude" keys that define filtering patterns.
 
     Returns:
-        dict[str, list[str]]: A dictionary mapping each input mechanism to a list
-                              of matching available mechanisms.
+        dict: A dictionary where each key is an item from `input_mechanisms`, and each value
+            is a list of mechanisms from `mechanisms` that match the inclusion/exclusion rules.
 
     Raises:
-        argparse.ArgumentTypeError: If a mechanism is not recognized or no match is found.
+        argparse.ArgumentTypeError: If a mechanism is not defined in `normalize` or if no
+            matching mechanisms are found for a given input.
     """
+
     matches = {}
+    
+    for input_mechanism in input_mechanisms:
+        
+        if input_mechanism not in normalize:
+            raise argparse.ArgumentTypeError(f"Unknown mechanism: {input_mechanism}")
 
-    for mechanism in input_mechanisms:
-        key = mechanism.lower()
+        rule = normalize[input_mechanism]
+        include = rule.get("include", [])
+        exclude = rule.get("exclude", [])
 
-        if key not in normalize:
-            raise argparse.ArgumentTypeError(f"Unknown mechanism: {mechanism}")
+        # Ensure include/exclude are lists
+        if isinstance(include, str):
+            include = [include]
+        if isinstance(exclude, str):
+            exclude = [exclude]
 
-        pattern = normalize[key]
+        founds = []
 
-        if isinstance(pattern, tuple):
-            # Tupla with string patterns
-            found = [
-                alg for alg in mechanisms
-                if all(p in alg.lower() for p in pattern)
-            ]
-        else:
-            # A simple string pattern
-            found = [
-                alg for alg in mechanisms
-                if pattern in alg.lower()
-            ]
+        for mechanism in mechanisms:
+            mech_lower = mechanism.lower()
+            
+            # Check if all include patterns are present
+            if all(p in mech_lower for p in include):
+            
+                # Skip if any exclude pattern is present
+                if any(p in mech_lower for p in exclude):
+                    continue
+                founds.append(mechanism)
 
-        if not found:
-            raise argparse.ArgumentTypeError(f"No mechanism matched for: {mechanism}")
-
-        matches[mechanism] = found
+        if not founds:
+            raise argparse.ArgumentTypeError(f"No mechanism matched for: {input_mechanism}")
+        
+        matches[input_mechanism] = founds
 
     return matches
 
