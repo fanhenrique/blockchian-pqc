@@ -3,4 +3,5 @@ pqc-evaluation/liboqs-python
 pqc-evaluation/venv
 pqc-evaluation/*.csv
 pqc-evaluation/out
+pqc-evaluation/results
 pqc-evaluation/__pycache__
