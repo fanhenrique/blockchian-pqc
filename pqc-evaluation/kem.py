@@ -2,7 +2,7 @@ from time import time
 import pandas as pd
 import oqs
 
-def evaluation_times(variant, number):
+def times_evaluation(variant, number):
     
     times_generate_keypair, times_encrypt, times_decrypt = [], [], []
 
@@ -44,8 +44,8 @@ def evaluation_times(variant, number):
         'encrypt': times_encrypt,
         'decrypt': times_decrypt
     })
-    
-def evaluation_sizes(variant):
+
+def sizes_evaluation(variant):
 
     with oqs.KeyEncapsulation(variant) as kem:
 
