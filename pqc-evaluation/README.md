@@ -20,8 +20,19 @@ Para instalar o liboqs e o liboqs-python.
 ## Ambiente virtual
 Antes de executar os algoritmos é precisos ativar o ambiente virtual.
 
+Criar o ambiente virtual.
+```
+python -m venv venv
+```
+
+Ativar o ambiente virtual
 ```
 source venv/bin/activate
+```
+
+Instale as dependências
+```
+pip install -r requirements.txt
 ```
 
 Para desativar o ambiente virtual.
