@@ -1,10 +1,10 @@
 from datetime import datetime
-from time import time
 import pandas as pd
 import oqs
 import argparse
 import os
 
+# internal imports
 import utils
 import kem
 import sig
