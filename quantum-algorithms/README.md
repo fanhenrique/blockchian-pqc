@@ -1,7 +1,7 @@
 # Algoritmo de Shor
 
 Dado um número inteiro $N$ composto (ou seja, não primo), para encontrar os dois inteiros $p$ e $q$ tal que $N = p * q$
-    
+
 ## 1. Escolha de um número aleatório $a$
 
 Escolha um número aleatório inteiro $a$, tal que:
@@ -19,3 +19,20 @@ Verifique se $a$ é coprimo de $N$
 Se $mdc(a, N) \not= 1$, então encontramos o segundo fator de $N$. Fim do algoritmo.
 
 >$mdc$: Máximo divisor comum
+
+## 3. Testar o valor de $r$
+
+Depois de obter $r$, verifique:
+
+* Se $r$ for ímpar -> Tente novamente com outro $a$.
+
+* Se $a^(r/2) \equiv -1 mod N$ -> Também tente novamente com outro $a$.
+
+
+## 4. Encontrar os fatores
+
+Se o $r$ encontrado for par e $a^(r/2) \equiv -1 mod N$, então os fatores de $N$ são dados por:
+
+$$
+mdc(a^(r/2−1), N) e mdc(a^(r/2+1), N)
+$$
