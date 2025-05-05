@@ -6,12 +6,12 @@ Ele encontra fatores de um número composto $N$, desde que você forneça um nú
 
 Etapas do algoritmo de Shor clássico
 
-| Etapa | Parte    | Descrição                                                         |
-|-------|----------|-------------------------------------------------------------------|
-| 1     | Clássica | Escolher $a$ aleatoriamente, tal que $a$ e $N$ sejam coprimos     |
-| 2     | Clássica | Encontrar o período $r$ de $f(x) = a^x \mod N$ por busca linear |
-| 3     | Clássica | Verificar se $r$ é par e $a^{r/2} \not\equiv -1 \mod N $  |
-| 4     | Clássica | Calcular $mdc(a^{r/2} \pm 1, N)$ para obter os fatores            |
+| Etapa | Parte    | Descrição                                                                                   |
+|-------|----------|---------------------------------------------------------------------------------------------|
+| 1     | Clássica | Escolher $a$ aleatoriamente, tal que $gcd(a, N) = 1$, ou seja, $a$ e $N$ devem ser coprimos |
+| 2     | Clássica | Encontrar o período $r$ de $f(x) = a^x \mod N$ por busca linear                             |
+| 3     | Clássica | Verificar se $r$ é par e $a^{r/2} \not\equiv -1 \mod N $                                    |
+| 4     | Clássica | Calcular $mdc(a^{r/2} \pm 1, N)$ para obter os fatores                                      |
 
 
 ## Como executar
@@ -36,12 +36,12 @@ Dado um número inteiro $N$ composto (ou seja, não primo), para encontrar os do
 
 Etapas do algoritmo de Shor quântico
 
-| Etapa | Parte    | Descrição                                                         |
-|-------|----------|-------------------------------------------------------------------|
-| 1     | Clássica | Escolher $a$ aleatoriamente, tal que $a$ e $N$ sejam coprimos     |
-| 2     | Quântica | Encontrar o período $r$ de $f(x) = a^x \mod N$ usando QFT Inversa |
-| 3     | Clássica | Verificar se $r$ é par e $a^{r/2} \not\equiv -1 \mod N $  |
-| 4     | Clássica | Calcular $mdc(a^{r/2} \pm 1, N)$ para obter os fatores            |
+| Etapa | Parte    | Descrição                                                                                   |
+|-------|----------|---------------------------------------------------------------------------------------------|
+| 1     | Clássica | Escolher $a$ aleatoriamente, tal que $gcd(a, N) = 1$, ou seja, $a$ e $N$ devem ser coprimos |
+| 2     | Quântica | Encontrar o período $r$ de $f(x) = a^x \mod N$ usando QFT Inversa                           |
+| 3     | Clássica | Verificar se $r$ é par e $a^{r/2} \not\equiv -1 \mod N $                                    |
+| 4     | Clássica | Calcular $mdc(a^{r/2} \pm 1, N)$ para obter os fatores                                      |
 
 ## 1. Escolha de um número aleatório $a$
 
