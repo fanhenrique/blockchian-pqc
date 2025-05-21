@@ -9,8 +9,7 @@ import utils
 import kem
 import sig
 
-DIR_RESULTS = 'results'
-
+DIR_RESULTS = "results"
 
 KEM_MECHANISMS =  {
     'bike': {
@@ -75,17 +74,17 @@ def save_results(df, mechanisms, number=None):
 
     os.makedirs(DIR_RESULTS, exist_ok=True)
 
-    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    mechanisms_str = '_'.join(mechanisms)
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    mechanisms_str = "_".join(mechanisms)
 
     if number:
-        file = f'{DIR_RESULTS}/{timestamp}_times-{number}x_{mechanisms_str}.csv'    
+        file = f"{DIR_RESULTS}/{timestamp}_times-{number}x_{mechanisms_str}.csv"
     else:
-        file = f'{DIR_RESULTS}/{timestamp}_sizes_{mechanisms_str}.csv'
+        file = f"{DIR_RESULTS}/{timestamp}_sizes_{mechanisms_str}.csv"
 
     df.to_csv(file, index=False)
     
-    print(f'File {file} was created')
+    print(f"File {file} was created")
 
 
 def run_times(mechanisms, times_evaluation, number):
@@ -126,8 +125,8 @@ def main():
         description="PQC Evaluation",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument('--kem', help='List KEM algorithms', type=str, nargs='+', choices=list(KEM_MECHANISMS.keys()))
-    parser.add_argument('--sig', help='List signature algorithms', type=str, nargs='+', choices=list(SIG_MECHANISMS.keys()))
+    parser.add_argument("--kem", help="Input list of KEM algorithms", type=str, nargs="+", choices=list(KEM_MECHANISMS.keys()))
+    parser.add_argument("--sig", help="Input list of digital signature algorithms", type=str, nargs="+", choices=list(SIG_MECHANISMS.keys()))
     # TODO ainda não funciona, vai implementar
     # parser.add_argument("--levels", "-l", help="Nist level", type=int, choices=range(1, 6), nargs="+")
     parser.add_argument("--number", "-n", help="Number of executions", type=utils.positive_int, default=1)
@@ -162,7 +161,11 @@ def main():
 
     if args.kem:
 
-        kem_mechanisms = load_mechanisms(input_mechanisms=args.kem, oqs_get_mechanisms=oqs.get_enabled_kem_mechanisms, normalize=KEM_MECHANISMS)
+        kem_mechanisms = load_mechanisms(
+            input_mechanisms=args.kem,
+            oqs_get_mechanisms=oqs.get_enabled_kem_mechanisms,
+            normalize=KEM_MECHANISMS
+        )
 
         print(kem_mechanisms)
 
@@ -176,7 +179,11 @@ def main():
 
     if args.sig:
 
-        sig_mechanisms = load_mechanisms(input_mechanisms=args.sig, oqs_get_mechanisms=oqs.get_enabled_sig_mechanisms, normalize=SIG_MECHANISMS)
+        sig_mechanisms = load_mechanisms(
+            input_mechanisms=args.sig,
+            oqs_get_mechanisms=oqs.get_enabled_sig_mechanisms,
+            normalize=SIG_MECHANISMS
+        )
 
         print(sig_mechanisms)
 
@@ -188,5 +195,5 @@ def main():
         df_sig_sizes = run_sizes(sig_mechanisms, sig.sizes_evaluation)
         save_results(df=df_sig_sizes,  mechanisms=args.sig)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
