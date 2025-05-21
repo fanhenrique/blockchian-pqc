@@ -8,59 +8,9 @@ import os
 import utils
 import kem
 import sig
+from mechanisms import KEM_MECHANISMS, SIG_MECHANISMS
 
 DIR_RESULTS = "results"
-
-KEM_MECHANISMS =  {
-    'bike': {
-        'include': ['bike'],
-    },
-    'hqc': {
-        'include': ['hqc'],
-    },
-    'kyber': {
-        'include': ['kyber'],
-    },
-     'sntrup': {
-        'include': ['sntrup'],
-    },
-    'mceliece': {
-        'include': ['classic-mceliece'],
-    },
-    'mlkem': {
-        'include': ['ml-kem'],
-    },
-    'frodo-aes': {
-        'include': ['frodokem', 'aes'],
-    },
-    'frodo-shake': {
-        'include': ['frodokem', 'shake'],
-    },
-}
-
-
-SIG_MECHANISMS = {
-    "falcon": {
-        "include": ["falcon"],
-        "exclude": ["padded"]
-    },
-    "falcon-padded": {
-        "include": ["falcon", "padded"]
-    },
-    "dilithium": {
-        "include": ["dilithium"]
-    },
-    "mldsa": {
-        "include": ["ml-dsa"]
-    },
-    "sphincs-sha": {
-        "include": ["sphincs", "sha2"]
-    },
-    "sphincs-shake": {
-        "include": ["sphincs", "shake"]
-    }
-}
-
 
 def load_mechanisms(input_mechanisms, oqs_get_mechanisms, normalize):
 
