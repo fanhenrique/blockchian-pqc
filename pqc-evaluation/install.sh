@@ -36,7 +36,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 cd ..
 python3 -m venv venv
 source venv/bin/activate
-python3 -m ensurepip --upgrade
+pip install --upgrade pip
 pip install -r requirements.txt
 
 # Clone the repository
