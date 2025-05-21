@@ -129,6 +129,8 @@ def main():
     parser.add_argument('--kem', help='List KEM algorithms', type=str, nargs='+', choices=list(KEM_MECHANISMS.keys()))
     parser.add_argument('--sig', help='List signature algorithms', type=str, nargs='+', choices=list(SIG_MECHANISMS.keys()))
     # TODO ainda não funciona, vai implementar
+    # parser.add_argument("--levels", "-l", help="Nist level", type=int, choices=range(1, 6), nargs="+")
+    parser.add_argument("--number", "-n", help="Number of executions", type=utils.positive_int, default=1)
     parser.add_argument("--list_kem", help="List of variants KEM algorithms", action="store_true")
     parser.add_argument("--list_sig", help="List of variants digital signature algorithms", action="store_true")
     
