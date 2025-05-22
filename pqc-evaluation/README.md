@@ -55,13 +55,13 @@ python main.py --help
 #### Lista de variantes dos algoritmos KEM
 
 ```bash
-python main.py --list_kem
+python main.py --list-kem
 ```
 
 #### Lista de variantes dos algoritmos de assinatura digital
 
 ```bash
-python main.py --list_sig
+python main.py --list-sig
 ```
 
 ### Execução dos algoritmos de assinatura digital
