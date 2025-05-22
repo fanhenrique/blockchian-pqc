@@ -12,10 +12,10 @@ from mechanisms import KEM_MECHANISMS, SIG_MECHANISMS
 
 DIR_RESULTS = "results"
 
-def load_mechanisms(input_mechanisms, oqs_get_mechanisms, normalize):
+def loads_mechanisms(input_mechanisms, oqs_get_mechanisms, normalizer):
 
     oqs_mechanisms = oqs_get_mechanisms()
-    mechanisms = utils.split_mechanisms(input_mechanisms=input_mechanisms, mechanisms=oqs_mechanisms, normalize=normalize)
+    mechanisms = utils.mechanisms_groups(input_mechanisms=input_mechanisms, mechanisms=oqs_mechanisms, normalizer=normalizer)
     
     return mechanisms
 
@@ -56,12 +56,12 @@ def run_sizes(mechanisms, sizes_evaluation):
     return pd.DataFrame(results_sizes)
 
 
-def print_variants(mechanisms, oqs_mechanisms, normalize):
+def print_variants(mechanisms, oqs_mechanisms, normalizer):
 
-    mechanism_groups = load_mechanisms(
+    mechanism_groups = loads_mechanisms(
         input_mechanisms=mechanisms.keys(),
         oqs_get_mechanisms=oqs_mechanisms,
-        normalize=normalize
+        normalizer=normalizer
     )
 
     for mechanism, variants in mechanism_groups.items():
@@ -69,12 +69,12 @@ def print_variants(mechanisms, oqs_mechanisms, normalize):
         for variant in variants:
             print(f"  - {variant}")
 
-def evaluation(mechanisms, oqs_mechanisms, normalize, time_evaluation, size_evaluation, number_executions):
+def evaluation(mechanisms, oqs_mechanisms, normalizer, time_evaluation, size_evaluation, number_executions):
 
-    mechanisms_groups = load_mechanisms(
+    mechanisms_groups = loads_mechanisms(
         input_mechanisms=mechanisms,
         oqs_get_mechanisms=oqs_mechanisms,
-        normalize=normalize
+        normalizer=normalizer
     )
 
     # time evaluation
@@ -106,31 +106,31 @@ def main():
 
     if args.list_kem:
         print("List of KEM algorithm variants")
-        print(oqs.get_enabled_kem_mechanisms())
+        # print(oqs.get_enabled_kem_mechanisms())
         # print(oqs.get_supported_kem_mechanisms())
 
         print_variants(
             mechanisms=KEM_MECHANISMS,
             oqs_mechanisms=oqs.get_enabled_kem_mechanisms,
-            normalize=KEM_MECHANISMS
+            normalizer=KEM_MECHANISMS
         )
 
     if args.list_sig:
         print("Digital Signature ")
-        print(oqs.get_enabled_sig_mechanisms())
+        # print(oqs.get_enabled_sig_mechanisms())
         # print(oqs.get_supported_sig_mechanisms())
 
         print_variants(
             mechanisms=SIG_MECHANISMS,
             oqs_mechanisms=oqs.get_enabled_sig_mechanisms,
-            normalize=SIG_MECHANISMS
+            normalizer=SIG_MECHANISMS
         )
 
     if args.kem:
         evaluation(
             mechanisms=args.kem,
             oqs_mechanisms=oqs.get_enabled_kem_mechanisms,
-            normalize=KEM_MECHANISMS,
+            normalizer=KEM_MECHANISMS,
             time_evaluation=kem.time_evaluation,
             size_evaluation=kem.size_evaluation,
             number_executions=args.number
@@ -140,7 +140,7 @@ def main():
         evaluation(
             mechanisms=args.sig,
             oqs_mechanisms=oqs.get_enabled_sig_mechanisms,
-            normalize=SIG_MECHANISMS,
+            normalizer=SIG_MECHANISMS,
             time_evaluation=sig.time_evaluation,
             size_evaluation=sig.size_evaluation,
             number_executions=args.number

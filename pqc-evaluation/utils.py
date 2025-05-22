@@ -6,18 +6,19 @@ def one_level(df_all, level, graphics):
             df_all = df_all.drop([i for i in graphic['mechanisms']])
     return df_all
 
-def split_mechanisms(input_mechanisms, mechanisms, normalize):
+def mechanisms_groups(input_mechanisms, mechanisms, normalizer):
     """
     Filters and groups mechanisms based on inclusion and exclusion rules.
 
     For each mechanism in `input_mechanisms`, applies normalization rules from
-    the `normalize` dictionary to identify matching mechanisms in the `mechanisms` list.
-    Each rule may include patterns to include and/or exclude.
+    the `normalizer` dictionary to identify matching mechanisms in the `mechanisms` list.
 
     Args:
         input_mechanisms (list of str): List of mechanism names to normalize and match.
+
         mechanisms (list of str): Full list of available mechanisms to filter.
-        normalize (dict): Dictionary where keys are mechanism names and values are
+        
+        normalizer (dict): Dictionary where keys are mechanism names and values are
             rules containing "include" and "exclude" keys that define filtering patterns.
 
     Returns:
@@ -25,7 +26,7 @@ def split_mechanisms(input_mechanisms, mechanisms, normalize):
             is a list of mechanisms from `mechanisms` that match the inclusion/exclusion rules.
 
     Raises:
-        argparse.ArgumentTypeError: If a mechanism is not defined in `normalize` or if no
+        argparse.ArgumentTypeError: If a mechanism is not defined in `normalizer` or if no
             matching mechanisms are found for a given input.
     """
 
@@ -33,10 +34,10 @@ def split_mechanisms(input_mechanisms, mechanisms, normalize):
     
     for input_mechanism in input_mechanisms:
         
-        if input_mechanism not in normalize:
+        if input_mechanism not in normalizer:
             raise argparse.ArgumentTypeError(f"Unknown mechanism: {input_mechanism}")
 
-        rule = normalize[input_mechanism]
+        rule = normalizer[input_mechanism]
         include = rule.get("include", [])
         exclude = rule.get("exclude", [])
 
@@ -49,13 +50,13 @@ def split_mechanisms(input_mechanisms, mechanisms, normalize):
         founds = []
 
         for mechanism in mechanisms:
-            mech_lower = mechanism.lower()
+            mechanism_lower = mechanism.lower()
             
             # Check if all include patterns are present
-            if all(p in mech_lower for p in include):
+            if all(p in mechanism_lower for p in include):
             
                 # Skip if any exclude pattern is present
-                if any(p in mech_lower for p in exclude):
+                if any(p in mechanism_lower for p in exclude):
                     continue
                 founds.append(mechanism)
 
