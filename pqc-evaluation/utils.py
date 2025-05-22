@@ -1,4 +1,5 @@
 import argparse
+import oqs
 
 def one_level(df_all, level, graphics):
     for graphic in graphics:
@@ -6,28 +7,61 @@ def one_level(df_all, level, graphics):
             df_all = df_all.drop([i for i in graphic['mechanisms']])
     return df_all
 
-def mechanisms_groups(input_mechanisms, mechanisms, normalizer):
+def mechanisms_groups(input_mechanisms, mechanisms, normalizer, oqs_cls):
     """
-    Filters and groups mechanisms based on inclusion and exclusion rules.
+    Filters and groups cryptographic mechanisms based on inclusion/exclusion patterns 
+    and maps them to their respective NIST security levels.
 
-    For each mechanism in `input_mechanisms`, applies normalization rules from
-    the `normalizer` dictionary to identify matching mechanisms in the `mechanisms` list.
+    For each mechanism in `input_mechanisms`, the function applies normalization rules 
+    defined in the `normalizer` to filter matching mechanisms from the `mechanisms` list.
+    The filtered mechanisms are then classified by their claimed NIST security level 
+    using the `oqs_cls` interface.
 
     Args:
-        input_mechanisms (list of str): List of mechanism names to normalize and match.
-
-        mechanisms (list of str): Full list of available mechanisms to filter.
+        input_mechanisms (list of str): 
+            List of mechanism identifiers to be normalized and grouped.
         
-        normalizer (dict): Dictionary where keys are mechanism names and values are
-            rules containing "include" and "exclude" keys that define filtering patterns.
+        mechanisms (list of str): 
+            Complete list of available mechanisms to be filtered.
+        
+        normalizer (dict): 
+            A dictionary defining filtering rules for each mechanism. 
+            Each key corresponds to an input mechanism name, and its value is 
+            a dictionary with the keys:
+                - "include": list or string of substrings that must be present.
+                - "exclude": list or string of substrings that must NOT be present.
+        
+        oqs_cls (class): 
+            Callable class that initializes a mechanism instance exposing a 
+            `details` attribute containing the 'claimed_nist_level' key.
 
     Returns:
-        dict: A dictionary where each key is an item from `input_mechanisms`, and each value
-            is a list of mechanisms from `mechanisms` that match the inclusion/exclusion rules.
+        dict: 
+            Dictionary mapping each input mechanism to its matched variants 
+            organized by NIST security level. Example structure:
 
+            mechanism_groups: {
+                mechanism_1: {
+                    {level_1: variant_1}, 
+                    ...,
+                    {level_5: variant_5}, 
+                },
+                ...,
+                mechanism_N: {
+                    {level_1: variant_1}, 
+                    ...,
+                    {level_5: variant_5}, 
+                }
+            }
+    
     Raises:
-        argparse.ArgumentTypeError: If a mechanism is not defined in `normalizer` or if no
-            matching mechanisms are found for a given input.
+        argparse.ArgumentTypeError: 
+            - If an input mechanism is not defined in the `normalizer`.
+            - If no matching mechanisms are found for an input mechanism.
+
+        ValueError:
+            If a matched mechanism does not provide a 'claimed_nist_level' 
+            in its details.    
     """
 
     matches = {}
@@ -41,21 +75,15 @@ def mechanisms_groups(input_mechanisms, mechanisms, normalizer):
         include = rule.get("include", [])
         exclude = rule.get("exclude", [])
 
-        # Ensure include/exclude are lists
-        if isinstance(include, str):
-            include = [include]
-        if isinstance(exclude, str):
-            exclude = [exclude]
+        include = [include] if isinstance(include, str) else include
+        exclude = [exclude] if isinstance(exclude, str) else exclude
 
         founds = []
 
         for mechanism in mechanisms:
             mechanism_lower = mechanism.lower()
-            
-            # Check if all include patterns are present
+
             if all(p in mechanism_lower for p in include):
-            
-                # Skip if any exclude pattern is present
                 if any(p in mechanism_lower for p in exclude):
                     continue
                 founds.append(mechanism)
@@ -63,9 +91,18 @@ def mechanisms_groups(input_mechanisms, mechanisms, normalizer):
         if not founds:
             raise argparse.ArgumentTypeError(f"No mechanism matched for: {input_mechanism}")
         
-        matches[input_mechanism] = founds
+        variants_with_levels = {}
+        for variant in founds:
+            with oqs_cls(variant) as oqs_variant:
+                level = oqs_variant.details.get('claimed_nist_level', None)
+                if level is None:
+                    raise ValueError(f"NIST level not found for {variant}")
+                variants_with_levels[level] = variant
+
+        matches[input_mechanism] = variants_with_levels
 
     return matches
+
 
 def positive_int(value: int):
     """
