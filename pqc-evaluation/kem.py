@@ -2,20 +2,20 @@ from time import time
 import pandas as pd
 import oqs
 
-def times_evaluation(variant, number):
+def time_evaluation(variant, number):
     
-    times_generate_keypair, times_encrypt, times_decrypt = [], [], []
+    time_keypair, time_encrypt, time_decrypt = [], [], []
 
     for i in range(number):
         
         with oqs.KeyEncapsulation(variant) as client, oqs.KeyEncapsulation(variant) as server:
             
             # Client generates its keypair
-            start_generate_keypair = time()
+            start_keypair = time()
             public_key_client = client.generate_keypair()
-            end_generate_keypair = time()
+            end_keypair = time()
 
-            times_generate_keypair.append(end_generate_keypair - start_generate_keypair)
+            time_keypair.append(end_keypair - start_keypair)
 
             # Optionally, the secret key can be obtained by calling export_secret_key()
             # and the client can later be re-instantiated with the key pair:
@@ -29,32 +29,31 @@ def times_evaluation(variant, number):
             ciphertext, shared_secret_server = server.encap_secret(public_key_client)
             end_encrypt = time()
 
-            times_encrypt.append(end_encrypt - start_encrypt)
+            time_encrypt.append(end_encrypt - start_encrypt)
 
             # The client decapsulates the server's ciphertext to obtain the shared secret
             start_decrypt = time()
             shared_secret_client = client.decap_secret(ciphertext)
             end_decrypt = time()
             
-            times_decrypt.append(end_decrypt - start_decrypt)
+            time_decrypt.append(end_decrypt - start_decrypt)
 
     return pd.DataFrame({
         'variant': [variant] * number,
-        'generate_keypair': times_generate_keypair,
-        'encrypt': times_encrypt,
-        'decrypt': times_decrypt
+        'keypair': time_keypair,
+        'encrypt': time_encrypt,
+        'decrypt': time_decrypt
     })
 
-def sizes_evaluation(variant):
+def size_evaluation(variant):
 
     with oqs.KeyEncapsulation(variant) as kem:
-
         return {
             'variant': variant,
-            'claimed_nist_level': kem.details['claimed_nist_level'], 
-            'length_ciphertext': kem.details['length_ciphertext'],
-            'length_public_key': kem.details['length_public_key'],
-            'length_secret_key': kem.details['length_secret_key'],
-            'length_shared_secret': kem.details['length_shared_secret']
+            'nist_level': kem.details['claimed_nist_level'], 
+            'ciphertext': kem.details['length_ciphertext'],
+            'public_key': kem.details['length_public_key'],
+            'secret_key': kem.details['length_secret_key'],
+            'shared_secret': kem.details['length_shared_secret']
         }
 
