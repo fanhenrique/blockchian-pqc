@@ -1,93 +1,77 @@
 # Avaliação dos algoritmos pós-quânticos
 
-## Instalação da liboqs e do liboqs-python
+## Instalação da `liboqs` e do `liboqs-python`
 
-Conceder permissão ao arquivo de instalação.
-```
+Conceda permissão de execução ao arquivo de instalação usando o comando
+```bash
 chmod +x install.sh
 ```
 
-Para instalar o liboqs e o liboqs-python.
-```
+Execute o comando abaixo para instalar o `liboqs` e o `liboqs-python`.
+```bash
 ./install.sh
 ```
 
->É recomendado que use a mesma versão da liboqs e liboqs-python.
->
->Confira as versões em [install.sh](./install.sh)
-
+>Recomenda-se utilizar a mesma versão do `liboqs` e do `liboqs-python`. Por padrão, estamos utilizando a versão `0.12.0`, definida nas variáveis no início do arquivo [install.sh](./install.sh).
 
 ## Ambiente virtual
-Antes de executar os algoritmos é precisos ativar o ambiente virtual.
 
-Criar o ambiente virtual.
-```
-python -m venv venv
-```
+Antes de executar os algoritmos, é preciso ativar o ambiente virtual.
 
-Ativar o ambiente virtual
-```
+Ativar o ambiente virtual.
+```bash
 source venv/bin/activate
 ```
 
-Instale as dependências
-```
-pip install -r requirements.txt
-```
-
-Para desativar o ambiente virtual.
-```
+Desativar o ambiente virtual.
+```bash
 deactivate
 ```
 
 ## Exemplos
 
-Antes de executar os algoritmos use o exemplos de teste da liboqs-python.
+Execute os exemplos de teste da `liboqs-python` para verificar se o `liboqs` e o `liboqs-python` estão funcionando corretamente.
 
 Exemplo de algoritmo de KEM.
-```
+```bash
 python liboqs-python/examples/kem.py
 ```
 
 Exemplo de algoritmo de assinatura digital.
-```
+```bash
 python liboqs-python/examples/sig.py
 ```
 
 ## Execução
 
-### Execução dos algoritmos KEM
+Consulte os argumentos disponíveis utilizando a opção `--help`.
 
-Tempos dos algoritmos KEM.
-```
-python kem_performance.py <quantidade-de-execuções>
+```bash
+python main.py --help
 ```
 
-Tamanhos dos algoritmos KEM.
+### Lista de variantes dos algoritmos pós-quânticos
+
+#### Lista de variantes dos algoritmos KEM
+
+```bash
+python main.py --list_kem
 ```
-python kem_sizes.py
+
+#### Lista de variantes dos algoritmos de assinatura digital
+
+```bash
+python main.py --list_sig
 ```
 
 ### Execução dos algoritmos de assinatura digital
 
-Tempos dos algoritmos de assinatura digital.
-```
-python sig_performance.py <quantidade-de-execuções>
-```
-
-Tamanhos dos algoritmos assinatura digital.
-```
-python sig_sizes.py
+```bash
+python main.py --sig dilithium sphincs-shake-f falcon --number <number_of_executions>
 ```
 
-## Geração dos gráficos
+### Execução dos algoritmos KEM
 
-Gerar gráficos dos algoritmos KEM.
-```
-python kem_graphics.py
-```
-
-Gerar gráficos dos algoritmos assinatura digital.
-```
-python sig_graphics.py
+```bash
+python main.py --kem kyber hqc mceliece-f --number <number_of_executions>
 ```
