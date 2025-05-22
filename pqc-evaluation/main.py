@@ -28,9 +28,9 @@ def save_results(df, mechanisms, number=None):
     mechanisms_str = "_".join(mechanisms)
 
     if number:
-        file = f"{DIR_RESULTS}/{timestamp}_times-{number}x_{mechanisms_str}.csv"
+        file = f"{DIR_RESULTS}/{timestamp}_time-evaluation-{number}x_{mechanisms_str}.csv"
     else:
-        file = f"{DIR_RESULTS}/{timestamp}_sizes_{mechanisms_str}.csv"
+        file = f"{DIR_RESULTS}/{timestamp}_size-evaluation_{mechanisms_str}.csv"
 
     df.to_csv(file, index=False)
     
@@ -68,6 +68,23 @@ def print_variants(mechanisms, oqs_mechanisms, normalize):
         print(f"{mechanism}:")
         for variant in variants:
             print(f"  - {variant}")
+
+def evaluation(mechanisms, oqs_mechanisms, normalize, time_evaluation, size_evaluation, number_executions):
+
+    mechanisms_groups = load_mechanisms(
+        input_mechanisms=mechanisms,
+        oqs_get_mechanisms=oqs_mechanisms,
+        normalize=normalize
+    )
+
+    # time evaluation
+    df_time_evaluation = run_times(mechanisms_groups, time_evaluation, number_executions)
+    save_results(df=df_time_evaluation, mechanisms=mechanisms, number=number_executions)
+
+    # size evaluation
+    df_size_evaluation = run_sizes(mechanisms_groups, size_evaluation)
+    save_results(df=df_size_evaluation, mechanisms=mechanisms)
+
 
 def main():
 
@@ -110,40 +127,24 @@ def main():
         )
 
     if args.kem:
-
-        kem_mechanisms = load_mechanisms(
-            input_mechanisms=args.kem,
-            oqs_get_mechanisms=oqs.get_enabled_kem_mechanisms,
-            normalize=KEM_MECHANISMS
+        evaluation(
+            mechanisms=args.kem,
+            oqs_mechanisms=oqs.get_enabled_kem_mechanisms,
+            normalize=KEM_MECHANISMS,
+            time_evaluation=kem.time_evaluation,
+            size_evaluation=kem.size_evaluation,
+            number_executions=args.number
         )
-
-        print(kem_mechanisms)
-
-        # KEM times
-        df_kem_times = run_times(kem_mechanisms, kem.times_evaluation, args.number)
-        save_results(df=df_kem_times,  mechanisms=args.kem, number=args.number)
-        
-        # KEM sizes
-        df_kem_sizes = run_sizes(kem_mechanisms, kem.sizes_evaluation)
-        save_results(df=df_kem_sizes, mechanisms=args.kem)
 
     if args.sig:
-
-        sig_mechanisms = load_mechanisms(
-            input_mechanisms=args.sig,
-            oqs_get_mechanisms=oqs.get_enabled_sig_mechanisms,
-            normalize=SIG_MECHANISMS
+        evaluation(
+            mechanisms=args.sig,
+            oqs_mechanisms=oqs.get_enabled_sig_mechanisms,
+            normalize=SIG_MECHANISMS,
+            time_evaluation=sig.time_evaluation,
+            size_evaluation=sig.size_evaluation,
+            number_executions=args.number
         )
-
-        print(sig_mechanisms)
-
-        # Signature times
-        df_sig_times = run_times(sig_mechanisms, sig.times_evaluation, args.number)
-        save_results(df=df_sig_times, mechanisms=args.sig, number=args.number)
-
-        # Signature sizes
-        df_sig_sizes = run_sizes(sig_mechanisms, sig.sizes_evaluation)
-        save_results(df=df_sig_sizes,  mechanisms=args.sig)
 
 if __name__ == "__main__":
     main()
