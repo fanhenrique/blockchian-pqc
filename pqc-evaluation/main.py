@@ -12,18 +12,7 @@ from rules import KEM_MECHANISMS, SIG_MECHANISMS
 
 DIR_RESULTS = "results"
 
-def loads_mechanisms(input_mechanisms, oqs_get_mechanisms, normalizer, oqs_cls):
 
-    oqs_mechanisms = oqs_get_mechanisms()
-
-    mechanisms = utils.mechanisms_groups(
-        input_mechanisms=input_mechanisms,
-        mechanisms=oqs_mechanisms,
-        normalizer=normalizer,
-        oqs_cls=oqs_cls
-    )
-    
-    return mechanisms
 
 
 def save_results(df, mechanisms, number=None):
@@ -62,28 +51,40 @@ def run_sizes(mechanisms, sizes_evaluation):
     return pd.DataFrame(results_sizes)
 
 
-def print_variants(mechanisms, oqs_mechanisms, normalizer, oqs_cls):
+def print_variants(mechanisms, oqs_mechanisms, normalizer, nist_levels, oqs_cls):
 
-    mechanism_groups = loads_mechanisms(
+    mechanism_groups = utils.mechanisms_groups(
         input_mechanisms=mechanisms.keys(),
-        oqs_get_mechanisms=oqs_mechanisms,
+        mechanisms=oqs_mechanisms(),
         normalizer=normalizer,
+        nist_levels=nist_levels,
         oqs_cls=oqs_cls
     )
-            
-    print(mechanism_groups)
+
     for mechanism, variants in mechanism_groups.items():
         print(f"{mechanism}:")
         for level, variant in variants.items():
             print(f"{4 * ' '}{variant} - NIST Level {level}")
             
 
-def evaluation(mechanisms, oqs_mechanisms, oqs_cls, normalizer, time_evaluation, size_evaluation, number_executions):
+def evaluation(
+    input_mechanisms,
+    oqs_mechanisms,
+    normalizer,
+    nist_levels,
+    oqs_cls,
+    time_evaluation,
+    number_executions,
+    size_evaluation
+):
 
-    mechanisms_groups = loads_mechanisms(
-        input_mechanisms=mechanisms,
-        oqs_get_mechanisms=oqs_mechanisms,
+    oqs_mechanisms = oqs_mechanisms()
+
+    mechanisms_groups = utils.mechanisms_groups(
+        input_mechanisms=input_mechanisms,
+        mechanisms=oqs_mechanisms,
         normalizer=normalizer,
+        nist_levels=nist_levels,
         oqs_cls=oqs_cls
     )
 
@@ -104,8 +105,7 @@ def main():
     )
     parser.add_argument("--kem", help="Input list of KEM algorithms", type=str, nargs="+", choices=list(KEM_MECHANISMS.keys()))
     parser.add_argument("--sig", help="Input list of digital signature algorithms", type=str, nargs="+", choices=list(SIG_MECHANISMS.keys()))
-    # TODO ainda não funciona, vai implementar
-    # parser.add_argument("--levels", "-l", help="Nist level", type=int, choices=range(1, 6), nargs="+")
+    parser.add_argument("--levels", "-l", help="Nist levels", type=int, choices=range(1, 6), default=(range(1,6)), nargs="+")
     parser.add_argument("--number", "-n", help="Number of executions", type=utils.positive_int, default=1)
     parser.add_argument("--list-kem", help="List of variants KEM algorithms", action="store_true")
     parser.add_argument("--list-sig", help="List of variants digital signature algorithms", action="store_true")
@@ -123,6 +123,7 @@ def main():
             mechanisms=KEM_MECHANISMS,
             oqs_mechanisms=oqs.get_enabled_kem_mechanisms,
             normalizer=KEM_MECHANISMS,
+            nist_levels=args.levels,
             oqs_cls=oqs.KeyEncapsulation
         )
 
@@ -135,29 +136,32 @@ def main():
             mechanisms=SIG_MECHANISMS,
             oqs_mechanisms=oqs.get_enabled_sig_mechanisms,
             normalizer=SIG_MECHANISMS,
+            nist_levels=args.levels,
             oqs_cls=oqs.Signature
         )
 
     if args.kem:
         evaluation(
-            mechanisms=args.kem,
+            input_mechanisms=args.kem,
             oqs_mechanisms=oqs.get_enabled_kem_mechanisms,
-            oqs_cls=oqs.KeyEncapsulation,
             normalizer=KEM_MECHANISMS,
+            nist_levels=args.levels,
+            oqs_cls=oqs.KeyEncapsulation,
             time_evaluation=kem.time_evaluation,
+            number_executions=args.number,
             size_evaluation=kem.size_evaluation,
-            number_executions=args.number
         )
 
     if args.sig:
         evaluation(
-            mechanisms=args.sig,
+            input_mechanisms=args.sig,
             oqs_mechanisms=oqs.get_enabled_sig_mechanisms,
-            oqs_cls=oqs.Signature,
             normalizer=SIG_MECHANISMS,
+            nist_levels=args.levels,
+            oqs_cls=oqs.Signature,
             time_evaluation=sig.time_evaluation,
+            number_executions=args.number,
             size_evaluation=sig.size_evaluation,
-            number_executions=args.number
         )
 
 if __name__ == "__main__":

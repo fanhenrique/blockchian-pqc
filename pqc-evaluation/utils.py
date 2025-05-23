@@ -7,7 +7,7 @@ def one_level(df_all, level, graphics):
             df_all = df_all.drop([i for i in graphic['mechanisms']])
     return df_all
 
-def mechanisms_groups(input_mechanisms, mechanisms, normalizer, oqs_cls):
+def mechanisms_groups(input_mechanisms, mechanisms, normalizer, nist_levels, oqs_cls):
     """
     Filters and groups cryptographic mechanisms based on inclusion/exclusion patterns 
     and maps them to their respective NIST security levels.
@@ -97,9 +97,11 @@ def mechanisms_groups(input_mechanisms, mechanisms, normalizer, oqs_cls):
                 level = oqs_variant.details.get('claimed_nist_level', None)
                 if level is None:
                     raise ValueError(f"NIST level not found for {variant}")
-                variants_with_levels[level] = variant
-
-        matches[input_mechanism] = variants_with_levels
+                if level in nist_levels:
+                    variants_with_levels[level] = variant
+                    
+        if variants_with_levels:
+            matches[input_mechanism] = variants_with_levels
 
     return matches
 
