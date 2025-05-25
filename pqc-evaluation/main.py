@@ -8,36 +8,38 @@ import os
 import utils
 import kem
 import sig
-from rules import KEM_MECHANISMS, SIG_MECHANISMS
+import ecdsa
+from rules import KEM_MECHANISMS, SIG_MECHANISMS, CURVES
 
 DIR_RESULTS = "results"
 
 
-
-
-def save_results(df, mechanisms, number=None):
+def save_results(dfs, input_mechanisms):
 
     os.makedirs(DIR_RESULTS, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    mechanisms_str = "_".join(mechanisms)
+    mechanisms_str = "_".join(input_mechanisms)
 
-    if number:
-        file = f"{DIR_RESULTS}/{timestamp}_time-evaluation-{number}x_{mechanisms_str}.csv"
-    else:
-        file = f"{DIR_RESULTS}/{timestamp}_size-evaluation_{mechanisms_str}.csv"
+    for key, df in dfs.items():
+        file = f"{DIR_RESULTS}/{timestamp}_{key}_{mechanisms_str}.csv"
+        save_csv(df, file)
 
+def save_csv(df, file):
     df.to_csv(file, index=False)
-    
     print(f"File {file} was created")
 
 
-def run_times(mechanisms, times_evaluation, number):
+def run_times(mechanisms, oqs_time_evaluation,  number, ecdsa_time_evaluation=None):
 
     results_times = []
     for mechanism, variants in mechanisms.items():
-        for variant in variants.values():
-            results_times.append(times_evaluation(variant, number))
+        if mechanism == "ecdsa":
+            for variant in variants.values():
+                results_times.append(ecdsa_time_evaluation(variant, number))
+        else:
+            for variant in variants.values():
+                results_times.append(oqs_time_evaluation(variant, number))
 
     return pd.concat(results_times)
 
@@ -66,21 +68,20 @@ def print_variants(mechanisms, oqs_mechanisms, normalizer, nist_levels, oqs_cls)
         for level, variant in variants.items():
             print(f"{4 * ' '}{variant} - NIST Level {level}")
             
-
-def evaluation(
+def kem_evaluation(
     input_mechanisms,
     oqs_mechanisms,
     normalizer,
     nist_levels,
     oqs_cls,
-    time_evaluation,
     number_executions,
-    size_evaluation
+    size_evaluation=None,
+    oqs_time_evaluation=None
 ):
 
     oqs_mechanisms = oqs_mechanisms()
 
-    mechanisms_groups = utils.mechanisms_groups(
+    oqs_mechanisms_groups = utils.mechanisms_groups(
         input_mechanisms=input_mechanisms,
         mechanisms=oqs_mechanisms,
         normalizer=normalizer,
@@ -89,13 +90,81 @@ def evaluation(
     )
 
     # time evaluation
-    df_time_evaluation = run_times(mechanisms_groups, time_evaluation, number_executions)
-    save_results(df=df_time_evaluation, mechanisms=mechanisms, number=number_executions)
+    df_time_evaluation = run_times(oqs_mechanisms_groups, oqs_time_evaluation, number_executions)
 
     # size evaluation
-    df_size_evaluation = run_sizes(mechanisms_groups, size_evaluation)
-    save_results(df=df_size_evaluation, mechanisms=mechanisms)
+    df_size_evaluation = run_sizes(oqs_mechanisms_groups, size_evaluation)
 
+    dfs = {
+        f"time-evaluation-{number_executions}x": df_time_evaluation,
+        "size-evaluation": df_size_evaluation,
+    }
+
+    save_results(dfs=dfs, input_mechanisms=input_mechanisms)
+
+
+def sig_evaluation(
+    input_mechanisms,
+    oqs_mechanisms,
+    normalizer,
+    nist_levels,
+    oqs_cls,
+    number_executions,
+    size_evaluation=None,
+    oqs_time_evaluation=None,
+    ecdsa_time_evaluation=None,
+):
+
+    oqs_mechanisms = oqs_mechanisms()
+
+    oqs_mechanisms_groups = utils.mechanisms_groups(
+        input_mechanisms=input_mechanisms,
+        mechanisms=oqs_mechanisms,
+        normalizer=normalizer,
+        nist_levels=nist_levels,
+        oqs_cls=oqs_cls
+    )
+
+    if 'ecdsa' in input_mechanisms:
+        ecdsa_mechanisms_groups = utils.get_ecdsa_mechanisms(
+            input_mechanisms= input_mechanisms,
+            curves=CURVES,
+            nist_levels=nist_levels
+        )
+
+    combined = {}
+    for mechanism in input_mechanisms:
+        if mechanism in oqs_mechanisms_groups:
+            combined[mechanism] = oqs_mechanisms_groups[mechanism]
+        elif mechanism in ecdsa_mechanisms_groups:
+            combined[mechanism] = ecdsa_mechanisms_groups[mechanism]
+        else:
+            raise ValueError(f"Mechanism '{mech}' not found in oqs_mechanisms_groups or ecdsa_mechanisms_groups")
+    
+    # time evaluation
+    df_time_evaluation = run_times(combined, oqs_time_evaluation, ecdsa_time_evaluation, number_executions)
+    
+    df_time_evaluation_mean_std = pd.DataFrame()
+    df_time_evaluation_mean_std['mean_keypair'] = pd.Series(df_time_evaluation.groupby('variant').mean()['keypair'])
+    df_time_evaluation_mean_std['std_keypair'] = pd.Series(df_time_evaluation.groupby('variant').std()['keypair'])    
+    df_time_evaluation_mean_std['mean_sign'] = pd.Series(df_time_evaluation.groupby('variant').mean()['sign'])
+    df_time_evaluation_mean_std['std_sign'] = pd.Series(df_time_evaluation.groupby('variant').std()['sign'])    
+    df_time_evaluation_mean_std['mean_verify'] = pd.Series(df_time_evaluation.groupby('variant').mean()['verify'])
+    df_time_evaluation_mean_std['std_verify'] = pd.Series(df_time_evaluation.groupby('variant').std()['verify'])
+
+    # Transform the index into a column 
+    df_time_evaluation_mean_std = df_time_evaluation_mean_std.reset_index()
+    
+    # size evaluation
+    df_size_evaluation = run_sizes(oqs_mechanisms_groups, size_evaluation)
+
+    dfs = {
+        f"time-evaluation-{number_executions}x": df_time_evaluation,
+        "time-evaluation-mean-std": df_time_evaluation_mean_std,
+        "size-evaluation": df_size_evaluation,
+    }
+
+    save_results(dfs=dfs, input_mechanisms=input_mechanisms)
 
 def main():
 
@@ -111,8 +180,6 @@ def main():
     parser.add_argument("--list-sig", help="List of variants digital signature algorithms", action="store_true")
     
     args = parser.parse_args()
-
-    # print(args)
 
     if args.list_kem:
         print("List of KEM algorithm variants")
@@ -141,25 +208,26 @@ def main():
         )
 
     if args.kem:
-        evaluation(
+        kem_evaluation(
             input_mechanisms=args.kem,
             oqs_mechanisms=oqs.get_enabled_kem_mechanisms,
             normalizer=KEM_MECHANISMS,
             nist_levels=args.levels,
-            oqs_cls=oqs.KeyEncapsulation,
-            time_evaluation=kem.time_evaluation,
+            oqs_cls=oqs.KeyEncapsulation,      
+            oqs_time_evaluation=kem.time_evaluation,
             number_executions=args.number,
             size_evaluation=kem.size_evaluation,
         )
 
     if args.sig:
-        evaluation(
+        sig_evaluation(
             input_mechanisms=args.sig,
             oqs_mechanisms=oqs.get_enabled_sig_mechanisms,
             normalizer=SIG_MECHANISMS,
             nist_levels=args.levels,
             oqs_cls=oqs.Signature,
-            time_evaluation=sig.time_evaluation,
+            oqs_time_evaluation=sig.time_evaluation,
+            ecdsa_time_evaluation=ecdsa.time_evaluation,
             number_executions=args.number,
             size_evaluation=sig.size_evaluation,
         )

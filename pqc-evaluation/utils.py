@@ -88,8 +88,8 @@ def mechanisms_groups(input_mechanisms, mechanisms, normalizer, nist_levels, oqs
                     continue
                 founds.append(mechanism)
 
-        if not founds:
-            raise argparse.ArgumentTypeError(f"No mechanism matched for: {input_mechanism}")
+        # if not founds:
+            # raise argparse.ArgumentTypeError(f"No mechanism matched for: {input_mechanism}")
         
         variants_with_levels = {}
         for variant in founds:
@@ -103,6 +103,24 @@ def mechanisms_groups(input_mechanisms, mechanisms, normalizer, nist_levels, oqs
         if variants_with_levels:
             matches[input_mechanism] = variants_with_levels
 
+    return matches
+
+
+def get_ecdsa_mechanisms(input_mechanisms, curves, nist_levels):
+    
+    matches = {}
+    
+    for mechanism in input_mechanisms:
+        if mechanism == "ecdsa":
+            variants_with_levels = {}
+            for level, variant in curves.items():
+
+                if level in nist_levels:
+                    variants_with_levels[level] = variant
+        
+            if variants_with_levels: 
+                matches[mechanism] = variants_with_levels         
+        
     return matches
 
 

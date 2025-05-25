@@ -13,7 +13,7 @@ KEM_MECHANISMS =  {
     },
     "mceliece": {
         "include": ["classic-mceliece"],
-        "exclude": ["f"]
+        "exclude": ["f"],
     },
     "mceliece-f": {
         "include": ["classic-mceliece", "f"],
@@ -30,11 +30,14 @@ KEM_MECHANISMS =  {
 }
 
 SIG_MECHANISMS = {
+    "ecdsa": {
+        "include": ["ecdsa"],
+    },
     "mldsa": {
-        "include": ["ml-dsa"]
+        "include": ["ml-dsa"],
     },
     "dilithium": {
-        "include": ["dilithium"]
+        "include": ["dilithium"],
     },
     "sphincs-sha-s": {
         "include": ["sphincs", "sha2", "s"],
@@ -54,36 +57,42 @@ SIG_MECHANISMS = {
     },
     "falcon": {
         "include": ["falcon"],
-        "exclude": ["padded"]
+        "exclude": ["padded"],
     },
     "falcon-padded": {
-        "include": ["falcon", "padded"]
+        "include": ["falcon", "padded"],
     },
     "mayo": {
         "include": ["mayo"],
     },
     "cross-rsdp-small": {
         "include": ["cross", "rsdp", "small"],
-        "exclude": ["rsdpg"]
+        "exclude": ["rsdpg"],
     },
     "cross-rsdpg-small": {
         "include": ["cross", "rsdpg", "small"],
-        # "exclude": ["rsdp"]
+        # "exclude": ["rsdp"],
     },
     "cross-rsdp-balanced": {
         "include": ["cross", "rsdp", "balanced"],
-        "exclude": ["rsdpg"]
+        "exclude": ["rsdpg"],
     },
     "cross-rsdpg-balanced": {
         "include": ["cross", "rsdpg", "balanced"],
-        # "exclude": ["rsdp"]
+        # "exclude": ["rsdp"],
     },
     "cross-rsdp-fast": {
         "include": ["cross", "rsdp", "fast"],
-        "exclude": ["rsdpg"]
+        "exclude": ["rsdpg"],
     },
     "cross-rsdpg-fast": {
         "include": ["cross", "rsdpg", "fast"],
-        # "exclude": ["rsdp"]
+        # "exclude": ["rsdp"],
     },
+}
+
+CURVES = {
+    1: "P-256",
+    3: "P-384",
+    5: "P-521",
 }
