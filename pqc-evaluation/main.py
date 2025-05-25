@@ -69,13 +69,13 @@ def print_variants(input_mechanisms, oqs_mechanisms, normalizer, nist_levels, oq
             nist_levels=nist_levels
         )
 
-    combine_mechanism_groups = combine_mechanism_groups(
+    combine_mechanisms = combine_mechanism_groups(
         input_mechanisms=input_mechanisms,
         oqs_mechanisms=oqs_mechanisms_groups,
         ecdsa_mechanisms=ecdsa_mechanisms_groups,
     )
 
-    for mechanism, variants in combine_mechanism_groups.items():
+    for mechanism, variants in combine_mechanisms.items():
         print(f"{mechanism}:")
         for level, variant in variants.items():
             print(f"{4 * ' '}{variant} - NIST Level {level}")
@@ -208,7 +208,7 @@ def sig_evaluation(
             nist_levels=nist_levels
         )
 
-    combine_mechanism_groups = combine_mechanism_groups(
+    combine_mechanisms = combine_mechanism_groups(
         input_mechanisms=input_mechanisms,
         oqs_mechanisms=oqs_mechanisms_groups,
         ecdsa_mechanisms=ecdsa_mechanisms_groups,
@@ -216,7 +216,7 @@ def sig_evaluation(
 
     # time evaluation
     df_time_evaluation = run_times(
-        mechanisms=combine_mechanism_groups,
+        mechanisms=combine_mechanisms,
         oqs_time_evaluation=oqs_time_evaluation,
         ecdsa_time_evaluation=ecdsa_time_evaluation,
         number=number_executions
