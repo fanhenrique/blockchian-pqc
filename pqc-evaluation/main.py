@@ -13,7 +13,6 @@ from rules import KEM_MECHANISMS, SIG_MECHANISMS, CURVES
 
 DIR_RESULTS = "results"
 
-
 def save_results(dfs, input_mechanisms):
 
     os.makedirs(DIR_RESULTS, exist_ok=True)
@@ -30,7 +29,7 @@ def save_csv(df, file):
     print(f"File {file} was created")
 
 
-def run_times(mechanisms, oqs_time_evaluation,  number, ecdsa_time_evaluation=None):
+def run_times(mechanisms, oqs_time_evaluation, number, ecdsa_time_evaluation=None):
 
     results_times = []
     for mechanism, variants in mechanisms.items():
@@ -53,10 +52,10 @@ def run_sizes(mechanisms, sizes_evaluation):
     return pd.DataFrame(results_sizes)
 
 
-def print_variants(mechanisms, oqs_mechanisms, normalizer, nist_levels, oqs_cls):
+def print_variants(input_mechanisms, oqs_mechanisms, normalizer, nist_levels, oqs_cls, ecds_mechanisms=None):
 
-    mechanism_groups = utils.mechanisms_groups(
-        input_mechanisms=mechanisms.keys(),
+    oqs_mechanisms_groups = utils.mechanisms_groups(
+        input_mechanisms=input_mechanisms,
         mechanisms=oqs_mechanisms(),
         normalizer=normalizer,
         nist_levels=nist_levels,
@@ -174,6 +173,13 @@ def sig_evaluation(
             raise ValueError(f"Mechanism '{mech}' not found in oqs_mechanisms_groups or ecdsa_mechanisms_groups")
     
     # time evaluation
+    df_time_evaluation = run_times(
+        mechanisms=combine_mechanism_groups,
+        oqs_time_evaluation=oqs_time_evaluation,
+        ecdsa_time_evaluation=ecdsa_time_evaluation,
+        number=number_executions
+    )
+
     # Compute mean and std of time evaluation
     df_time_evaluation_mean_std = compute_mean_std(
         df=df_time_evaluation,
@@ -213,7 +219,7 @@ def main():
         # print(oqs.get_supported_kem_mechanisms())
 
         print_variants(
-            mechanisms=KEM_MECHANISMS,
+            input_mechanisms=KEM_MECHANISMS.keys(),
             oqs_mechanisms=oqs.get_enabled_kem_mechanisms,
             normalizer=KEM_MECHANISMS,
             nist_levels=args.levels,
@@ -226,7 +232,7 @@ def main():
         # print(oqs.get_supported_sig_mechanisms())
 
         print_variants(
-            mechanisms=SIG_MECHANISMS,
+            input_mechanisms=SIG_MECHANISMS.keys(),
             oqs_mechanisms=oqs.get_enabled_sig_mechanisms,
             normalizer=SIG_MECHANISMS,
             nist_levels=args.levels,
