@@ -62,7 +62,20 @@ def print_variants(input_mechanisms, oqs_mechanisms, normalizer, nist_levels, oq
         oqs_cls=oqs_cls
     )
 
-    for mechanism, variants in mechanism_groups.items():
+    if 'ecdsa' in input_mechanisms:
+        ecdsa_mechanisms_groups = utils.get_ecdsa_mechanisms(
+            input_mechanisms= input_mechanisms,
+            curves=CURVES,
+            nist_levels=nist_levels
+        )
+
+    combine_mechanism_groups = combine_mechanism_groups(
+        input_mechanisms=input_mechanisms,
+        oqs_mechanisms=oqs_mechanisms_groups,
+        ecdsa_mechanisms=ecdsa_mechanisms_groups,
+    )
+
+    for mechanism, variants in combine_mechanism_groups.items():
         print(f"{mechanism}:")
         for level, variant in variants.items():
             print(f"{4 * ' '}{variant} - NIST Level {level}")
@@ -90,6 +103,38 @@ def compute_mean_std(df, group_by, columns):
     # Transform the index into a column
     result = result.reset_index()
     return result
+
+
+def combine_mechanism_groups(input_mechanisms, oqs_mechanisms, ecdsa_mechanisms):
+    """
+    Combines OQS and ECDSA mechanism groups while preserving the order of input_mechanisms.
+
+    Args:
+        input_mechanisms: 
+            List of mechanism identifiers to retrieve.
+        oqs_mechanisms: 
+            Dictionary containing OQS mechanism groups.
+        ecdsa_mechanisms: 
+            Dictionary containing ECDSA mechanism groups.
+
+    Returns:
+        dict: A combined dictionary with mechanisms and their corresponding groups.
+
+    Raises:
+        ValueError: 
+            If a mechanism is not found in either oqs_mechanisms or ecdsa_mechanisms
+    """
+    combined = {}
+
+    for mechanism in input_mechanisms:
+        if mechanism in oqs_mechanisms:
+            combined[mechanism] = oqs_mechanisms[mechanism]
+        elif mechanism in ecdsa_mechanisms:
+            combined[mechanism] = ecdsa_mechanisms[mechanism]
+        else:
+            raise ValueError(f"Mechanism '{mechanism}' not found in oqs_mechanisms or ecdsa_mechanisms")
+
+    return combined
 
 
 def kem_evaluation(
@@ -163,15 +208,12 @@ def sig_evaluation(
             nist_levels=nist_levels
         )
 
-    combined = {}
-    for mechanism in input_mechanisms:
-        if mechanism in oqs_mechanisms_groups:
-            combined[mechanism] = oqs_mechanisms_groups[mechanism]
-        elif mechanism in ecdsa_mechanisms_groups:
-            combined[mechanism] = ecdsa_mechanisms_groups[mechanism]
-        else:
-            raise ValueError(f"Mechanism '{mech}' not found in oqs_mechanisms_groups or ecdsa_mechanisms_groups")
-    
+    combine_mechanism_groups = combine_mechanism_groups(
+        input_mechanisms=input_mechanisms,
+        oqs_mechanisms=oqs_mechanisms_groups,
+        ecdsa_mechanisms=ecdsa_mechanisms_groups,
+    )
+
     # time evaluation
     df_time_evaluation = run_times(
         mechanisms=combine_mechanism_groups,
