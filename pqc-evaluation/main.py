@@ -67,7 +67,32 @@ def print_variants(mechanisms, oqs_mechanisms, normalizer, nist_levels, oqs_cls)
         print(f"{mechanism}:")
         for level, variant in variants.items():
             print(f"{4 * ' '}{variant} - NIST Level {level}")
-            
+
+
+def compute_mean_std(df, group_by, columns):
+    """
+    Compute mean and standard deviation for specified columns grouped by a key.
+
+    Parameters:
+    - df: The input DataFrame.
+    - group_by: Column name to group by (e.g., 'variant').
+    - columns: List of column names to compute mean and std for.
+
+    Returns:
+    - pd.DataFrame: DataFrame with mean and std columns.
+    """
+    grouped = df.groupby(group_by)
+
+    result = pd.DataFrame()
+    for col in columns:
+        result[f'mean_{col}'] = grouped[col].mean()
+        result[f'std_{col}'] = grouped[col].std()
+
+    # Transform the index into a column
+    result = result.reset_index()
+    return result
+
+
 def kem_evaluation(
     input_mechanisms,
     oqs_mechanisms,
@@ -91,6 +116,13 @@ def kem_evaluation(
 
     # time evaluation
     df_time_evaluation = run_times(oqs_mechanisms_groups, oqs_time_evaluation, number_executions)
+
+    # Compute mean and std of time evaluation
+    df_time_evaluation_mean_std = compute_mean_std(
+        df=df_time_evaluation,
+        group_by='variant',
+        columns=["keypair", "encrypt", "decrypt"]
+    )
 
     # size evaluation
     df_size_evaluation = run_sizes(oqs_mechanisms_groups, size_evaluation)
@@ -142,18 +174,12 @@ def sig_evaluation(
             raise ValueError(f"Mechanism '{mech}' not found in oqs_mechanisms_groups or ecdsa_mechanisms_groups")
     
     # time evaluation
-    df_time_evaluation = run_times(combined, oqs_time_evaluation, ecdsa_time_evaluation, number_executions)
-    
-    df_time_evaluation_mean_std = pd.DataFrame()
-    df_time_evaluation_mean_std['mean_keypair'] = pd.Series(df_time_evaluation.groupby('variant').mean()['keypair'])
-    df_time_evaluation_mean_std['std_keypair'] = pd.Series(df_time_evaluation.groupby('variant').std()['keypair'])    
-    df_time_evaluation_mean_std['mean_sign'] = pd.Series(df_time_evaluation.groupby('variant').mean()['sign'])
-    df_time_evaluation_mean_std['std_sign'] = pd.Series(df_time_evaluation.groupby('variant').std()['sign'])    
-    df_time_evaluation_mean_std['mean_verify'] = pd.Series(df_time_evaluation.groupby('variant').mean()['verify'])
-    df_time_evaluation_mean_std['std_verify'] = pd.Series(df_time_evaluation.groupby('variant').std()['verify'])
-
-    # Transform the index into a column 
-    df_time_evaluation_mean_std = df_time_evaluation_mean_std.reset_index()
+    # Compute mean and std of time evaluation
+    df_time_evaluation_mean_std = compute_mean_std(
+        df=df_time_evaluation,
+        group_by='variant',
+        columns=["keypair", "sign", "verify"]
+    )
     
     # size evaluation
     df_size_evaluation = run_sizes(oqs_mechanisms_groups, size_evaluation)
