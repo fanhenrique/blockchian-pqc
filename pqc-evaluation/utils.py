@@ -7,6 +7,19 @@ def one_level(df_all, level, graphics):
             df_all = df_all.drop([i for i in graphic['mechanisms']])
     return df_all
 
+
+def get_variants_by_level(df, variant_dict):
+    csv_variants = set(df.index.to_list())
+
+    variants_by_level = {}
+
+    for scheme, levels in variant_dict.items():
+        for level, variant_name in levels.items():
+            if variant_name in csv_variants:
+                variants_by_level.setdefault(level, []).append(variant_name)
+
+    return dict(sorted(variants_by_level.items()))
+
 def mechanisms_groups(input_mechanisms, mechanisms, normalizer, nist_levels, oqs_cls):
     """
     Filters and groups cryptographic mechanisms based on inclusion/exclusion patterns 
