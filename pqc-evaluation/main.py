@@ -72,6 +72,7 @@ def print_variants(input_mechanisms, oqs_mechanisms, normalizer, nist_levels, oq
         oqs_cls=oqs_cls
     )
 
+    ecdsa_mechanisms_groups = {}
     if 'ecdsa' in input_mechanisms:
         ecdsa_mechanisms_groups = utils.get_ecdsa_mechanisms(
             input_mechanisms= input_mechanisms,
@@ -129,10 +130,6 @@ def combine_mechanism_groups(input_mechanisms, oqs_mechanisms, ecdsa_mechanisms=
 
     Returns:
         dict: A combined dictionary with mechanisms and their corresponding groups.
-
-    Raises:
-        ValueError: 
-            If a mechanism is not found in either oqs_mechanisms or ecdsa_mechanisms
     """
     combined = {}
 
@@ -141,8 +138,6 @@ def combine_mechanism_groups(input_mechanisms, oqs_mechanisms, ecdsa_mechanisms=
             combined[mechanism] = oqs_mechanisms[mechanism]
         elif mechanism in ecdsa_mechanisms:
             combined[mechanism] = ecdsa_mechanisms[mechanism]
-        else:
-            raise ValueError(f"Mechanism '{mechanism}' not found in oqs_mechanisms or ecdsa_mechanisms")
 
     return combined
 
