@@ -119,7 +119,7 @@ def compute_mean_std(df, group_by, columns):
     return result
 
 
-def combine_mechanism_groups(input_mechanisms, oqs_mechanisms, ecdsa_mechanisms):
+def combine_mechanism_groups(input_mechanisms, oqs_mechanisms, ecdsa_mechanisms=None):
     """
     Combines OQS and ECDSA mechanism groups while preserving the order of input_mechanisms.
 
@@ -215,6 +215,7 @@ def sig_evaluation(
         oqs_cls=oqs_cls
     )
 
+    ecdsa_mechanisms_groups = {}
     if 'ecdsa' in input_mechanisms:
         ecdsa_mechanisms_groups = utils.get_ecdsa_mechanisms(
             input_mechanisms= input_mechanisms,
@@ -225,7 +226,7 @@ def sig_evaluation(
     combine_mechanisms = combine_mechanism_groups(
         input_mechanisms=input_mechanisms,
         oqs_mechanisms=oqs_mechanisms_groups,
-        ecdsa_mechanisms=ecdsa_mechanisms_groups,
+        ecdsa_mechanisms=ecdsa_mechanisms_groups if ecdsa_mechanisms_groups else None,
     )
 
     # time evaluation
