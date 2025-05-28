@@ -20,9 +20,10 @@ def plot(
     width=0.3, 
     yscale="log",
     title=None,
-    show=True,
+    show_graph=False,
     show_values=True,
     show_errors=True,
+    show_legend=True,
     save_formats=("svg", "png")
 ):
 
@@ -99,7 +100,8 @@ def plot(
     ax.tick_params(axis="x", labelsize="x-large")
     ax.tick_params(axis="y", labelsize="x-large")
 
-    ax.legend(loc="upper right", fontsize="x-large")
+    if show_legend:
+        ax.legend(loc="upper right", fontsize="x-large")
 
     ax.grid(True, axis="y", linestyle="--", linewidth=0.5, alpha=0.7)
 
@@ -112,7 +114,7 @@ def plot(
         plt.savefig(file, format=ext)    
         print(f"Graph {file} was created")
 
-    if show:
+    if show_graph:
         plt.show()
     else:
         plt.close()
@@ -123,14 +125,15 @@ def generate_plots_from_csv(
     dir_graph,
     variants_dict,
     columns,
+    show_graph,
+    show_values,
+    show_erros,
+    show_legend,
     ylabel="Tempo (ms)",
     xlabel="Algoritmos",
     yscale="log",
     figsize=(16, 9),
     save_formats=("svg", "png"),
-    show=True,
-    show_values=True,
-    show_erros=True,
 ):
     """
     Generates bar plots with error bars from a benchmark CSV file.
@@ -170,8 +173,9 @@ def generate_plots_from_csv(
             ylim=(1e-3, 1e4),
             figsize=figsize,
             title=f"Nível {level}",
-            show=show,
+            show_graph=show_graph,
             show_values=show_values,
             show_errors=show_erros,
+            show_legend=show_legend,
             save_formats=save_formats
         )

@@ -32,6 +32,10 @@ def save_results(dfs, input_mechanisms, levels, mechanisms_dict=None, columns=No
                 variants_dict=mechanisms_dict,
                 dir_graph=dir_graph,
                 columns = columns,
+                show_graph=True,
+                show_values=True,
+                show_erros=True,
+                show_legend=True,
             )
 
 def save_csv(df, file):
