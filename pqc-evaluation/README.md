@@ -55,23 +55,23 @@ python main.py --help
 #### Lista de variantes dos algoritmos KEM
 
 ```bash
-python main.py --list-kem
+python main.py --list-kem --levels [1, 2, 3, 4, 5]
 ```
 
 #### Lista de variantes dos algoritmos de assinatura digital
 
 ```bash
-python main.py --list-sig
+python main.py --list-sig --levels [1, 2, 3, 4, 5]
 ```
 
 ### Execução dos algoritmos de assinatura digital
 
 ```bash
-python main.py --sig dilithium sphincs-shake-f falcon --number <number_of_executions>
+python main.py --sig ecdsa mldsa sphincs-shake-f falcon --runs <number_of_executions> --levels [1, 2, 3, 4, 5]
 ```
 
 ### Execução dos algoritmos KEM
 
 ```bash
-python main.py --kem kyber hqc mceliece-f --number <number_of_executions>
+python main.py --kem bike mlkem hqc mceliece-f --runs <number_of_executions> --levels [1, 2, 3, 4, 5]
 ```
