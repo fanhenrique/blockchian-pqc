@@ -4,11 +4,12 @@ import oqs
 import argparse
 import os
 
-# internal imports
+# Internal imports
 import utils
 import kem
 import sig
 import ecdsa
+import plots
 from rules import KEM_MECHANISMS, SIG_MECHANISMS, CURVES
 
 def save_results(dfs, input_mechanisms, levels, mechanisms_dict=None):
@@ -24,6 +25,18 @@ def save_results(dfs, input_mechanisms, levels, mechanisms_dict=None):
         f = dir_results.split("/")
         file = f"{dir_results}/{key}.csv"
         save_csv(df, file)
+
+        if mechanisms_dict and key == "time-evaluation-mean-std":
+            plots.generate_plots_from_csv(
+                csv_path=file,
+                variants_dict=mechanisms_dict,
+                dir_graphics=dir_graphics,
+                columns = [
+                    ("mean_keypair", "std_keypair", "Geração de chaves"),
+                    ("mean_sign", "std_sign", "Assinatura"),
+                    ("mean_verify", "std_verify", "Verificação"),
+                ],
+          )
 
 def save_csv(df, file):
     df.to_csv(file, index=False)
