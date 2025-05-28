@@ -12,7 +12,7 @@ import ecdsa
 import plots
 from rules import KEM_MECHANISMS, SIG_MECHANISMS, CURVES
 
-def save_results(dfs, input_mechanisms, levels, mechanisms_dict=None):
+def save_results(dfs, input_mechanisms, levels, mechanisms_dict=None, columns=None):
 
     mechanisms_str = "_".join(input_mechanisms)
 
@@ -31,28 +31,24 @@ def save_results(dfs, input_mechanisms, levels, mechanisms_dict=None):
                 csv_path=file,
                 variants_dict=mechanisms_dict,
                 dir_graph=dir_graph,
-                columns = [
-                    ("mean_keypair", "std_keypair", "Geração de chaves"),
-                    ("mean_sign", "std_sign", "Assinatura"),
-                    ("mean_verify", "std_verify", "Verificação"),
-                ],
-          )
+                columns = columns,
+            )
 
 def save_csv(df, file):
     df.to_csv(file, index=False)
     print(f"File {file} was created")
 
 
-def run_times(mechanisms, oqs_time_evaluation, number, ecdsa_time_evaluation=None):
+def run_times(mechanisms, oqs_time_evaluation, runs, warm_up, ecdsa_time_evaluation=None):
 
     results_times = []
     for mechanism, variants in mechanisms.items():
         if mechanism == "ecdsa":
             for variant in variants.values():
-                results_times.append(ecdsa_time_evaluation(variant, number))
+                results_times.append(ecdsa_time_evaluation(variant=variant, runs=runs, warm_up=warm_up))
         else:
             for variant in variants.values():
-                results_times.append(oqs_time_evaluation(variant, number))
+                results_times.append(oqs_time_evaluation(variant=variant, runs=runs, warm_up=warm_up))
 
     return pd.concat(results_times)
 
@@ -157,7 +153,8 @@ def kem_evaluation(
     normalizer,
     nist_levels,
     oqs_cls,
-    number_executions,
+    runs,
+    warm_up,
     size_evaluation=None,
     oqs_time_evaluation=None
 ):
@@ -173,7 +170,12 @@ def kem_evaluation(
     )
 
     # time evaluation
-    df_time_evaluation = run_times(oqs_mechanisms_groups, oqs_time_evaluation, number_executions)
+    df_time_evaluation = run_times(
+        mechanisms=oqs_mechanisms_groups,
+        oqs_time_evaluation=oqs_time_evaluation,
+        runs=runs,
+        warm_up=warm_up
+    )
 
     # Compute mean and std of time evaluation
     df_time_evaluation_mean_std = compute_mean_std(
@@ -186,11 +188,22 @@ def kem_evaluation(
     df_size_evaluation = run_sizes(oqs_mechanisms_groups, size_evaluation)
 
     dfs = {
-        f"time-evaluation-{number_executions}x": df_time_evaluation,
+        f"time-evaluation-{runs}x": df_time_evaluation,
+        "time-evaluation-mean-std": df_time_evaluation_mean_std,
         "size-evaluation": df_size_evaluation,
     }
 
-    save_results(dfs=dfs, input_mechanisms=input_mechanisms, levels=nist_levels)
+    save_results(
+        dfs=dfs,
+        input_mechanisms=input_mechanisms,
+        levels=nist_levels,
+        mechanisms_dict=oqs_mechanisms_groups,
+        columns=[
+            ("mean_keypair", "std_keypair", "Geração de chaves"),
+            ("mean_encrypt", "std_encrypt", "Encriptação"),
+            ("mean_decrypt", "std_decrypt", "Decriptação"),
+        ]
+    )
 
 
 def sig_evaluation(
@@ -199,7 +212,8 @@ def sig_evaluation(
     normalizer,
     nist_levels,
     oqs_cls,
-    number_executions,
+    runs,
+    warm_up,
     size_evaluation=None,
     oqs_time_evaluation=None,
     ecdsa_time_evaluation=None,
@@ -234,7 +248,8 @@ def sig_evaluation(
         mechanisms=combine_mechanisms,
         oqs_time_evaluation=oqs_time_evaluation,
         ecdsa_time_evaluation=ecdsa_time_evaluation,
-        number=number_executions
+        runs=runs,
+        warm_up=warm_up
     )
 
     # Compute mean and std of time evaluation
@@ -248,12 +263,23 @@ def sig_evaluation(
     df_size_evaluation = run_sizes(oqs_mechanisms_groups, size_evaluation)
 
     dfs = {
-        f"time-evaluation-{number_executions}x": df_time_evaluation,
+        f"time-evaluation-{runs}x": df_time_evaluation,
         "time-evaluation-mean-std": df_time_evaluation_mean_std,
         "size-evaluation": df_size_evaluation,
     }
 
-    save_results(dfs=dfs, input_mechanisms=input_mechanisms, levels=nist_levels, mechanisms_dict=combine_mechanisms)
+    save_results(
+        dfs=dfs,
+        input_mechanisms=input_mechanisms,
+        levels=nist_levels,
+        mechanisms_dict=combine_mechanisms,
+        columns=[
+            ("mean_keypair", "std_keypair", "Geração de chaves"),
+            ("mean_sign", "std_sign", "Assinatura"),
+            ("mean_verify", "std_verify", "Verificação"),
+        ]
+    )
+
 
 def main():
 
@@ -264,7 +290,8 @@ def main():
     parser.add_argument("--kem", help="Input list of KEM algorithms", type=str, nargs="+", choices=list(KEM_MECHANISMS.keys()))
     parser.add_argument("--sig", help="Input list of digital signature algorithms", type=str, nargs="+", choices=list(SIG_MECHANISMS.keys()))
     parser.add_argument("--levels", "-l", help="Nist levels", type=int, choices=range(1, 6), default=(range(1,6)), nargs="+")
-    parser.add_argument("--number", "-n", help="Number of executions", type=utils.positive_int, default=1)
+    parser.add_argument("--runs", "-r", help="Number of executions", type=utils.positive_int, default=1)
+    parser.add_argument("--warm-up", "-wp", help="Number of executions warm up", type=utils.non_negative_int, default=0)
     parser.add_argument("--list-kem", help="List of variants KEM algorithms", action="store_true")
     parser.add_argument("--list-sig", help="List of variants digital signature algorithms", action="store_true")
     
@@ -304,7 +331,8 @@ def main():
             nist_levels=args.levels,
             oqs_cls=oqs.KeyEncapsulation,      
             oqs_time_evaluation=kem.time_evaluation,
-            number_executions=args.number,
+            runs=args.runs,
+            warm_up=args.warm_up,
             size_evaluation=kem.size_evaluation,
         )
 
@@ -317,7 +345,8 @@ def main():
             oqs_cls=oqs.Signature,
             oqs_time_evaluation=sig.time_evaluation,
             ecdsa_time_evaluation=ecdsa.time_evaluation,
-            number_executions=args.number,
+            runs=args.runs,
+            warm_up=args.warm_up,
             size_evaluation=sig.size_evaluation,
         )
 

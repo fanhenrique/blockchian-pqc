@@ -2,11 +2,34 @@ from time import time
 import pandas as pd
 import oqs
 
-def time_evaluation(variant, number):
+def time_evaluation(variant, runs, warm_up):
+
+    # Warm up
+    for i in range(warm_up):
+        
+        with oqs.KeyEncapsulation(variant) as client, oqs.KeyEncapsulation(variant) as server:
+            
+            # Client generates its keypair
+            public_key_client = client.generate_keypair()
+
+            # Optionally, the secret key can be obtained by calling export_secret_key()
+            # and the client can later be re-instantiated with the key pair:
+            # secret_key_client = client.export_secret_key()
+
+            # Store key pair, wait... (session resumption):
+            # client = oqs.KeyEncapsulation(kemalg, secret_key_client)
+
+            # The server encapsulates its secret using the client's public key
+            ciphertext, shared_secret_server = server.encap_secret(public_key_client)
+
+            # The client decapsulates the server's ciphertext to obtain the shared secret
+            shared_secret_client = client.decap_secret(ciphertext)
+
 
     time_keypair, time_encrypt, time_decrypt = [], [], []
 
-    for i in range(number):
+    # Runs
+    for i in range(runs):
         
         with oqs.KeyEncapsulation(variant) as client, oqs.KeyEncapsulation(variant) as server:
             
@@ -39,7 +62,7 @@ def time_evaluation(variant, number):
             time_decrypt.append((end_decrypt - start_decrypt) * 1000)
 
     return pd.DataFrame({
-        'variant': [variant] * number,
+        'variant': [variant] * runs,
         'keypair': time_keypair,
         'encrypt': time_encrypt,
         'decrypt': time_decrypt

@@ -4,12 +4,40 @@ import random
 import string
 import oqs
 
-def time_evaluation(variant, runs):
+def time_evaluation(variant, runs, warm_up):
+
+    # Warm up
+    for i in range(warm_up):
+        
+        message = ''.join(random.choices(string.ascii_letters + string.digits, k=60)).encode("utf-8")
+
+        with oqs.Signature(variant) as signer, oqs.Signature(variant) as verifier:
+
+            # Signer generates its keypair
+            signer_public_key = signer.generate_keypair()
+
+            # Optionally, the secret key can be obtained by calling export_secret_key()
+            # and the signer can later be re-instantiated with the key pair:
+            # secret_key = signer.export_secret_key()
+
+            # Store key pair, wait... (session resumption):
+            # signer = oqs.Signature(sigalg, secret_key)
+
+            # Signer signs the message
+            signature = signer.sign(message)
+
+            # Verifier verifies the signature
+            is_valid = verifier.verify(message, signature, signer_public_key)
+
+            if not is_valid:
+                print(f"WARNING: Verification failed at iteration {i}!")
+
 
     time_keypair, time_sign, time_verify = [], [], []
 
     # message = "This is the message to sign".encode()
 
+    # Runs
     for i in range(runs):
         
         message = ''.join(random.choices(string.ascii_letters + string.digits, k=60)).encode("utf-8")
