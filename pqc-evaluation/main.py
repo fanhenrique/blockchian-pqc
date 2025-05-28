@@ -11,17 +11,18 @@ import sig
 import ecdsa
 from rules import KEM_MECHANISMS, SIG_MECHANISMS, CURVES
 
-DIR_RESULTS = "results"
+def save_results(dfs, input_mechanisms, levels, mechanisms_dict=None):
 
-def save_results(dfs, input_mechanisms):
-
-    os.makedirs(DIR_RESULTS, exist_ok=True)
-
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     mechanisms_str = "_".join(input_mechanisms)
 
+    levels_str = "-".join(map(str, levels))
+
+    dir_results, dir_graphics = utils.create_result_dirs(f"{mechanisms_str}_levels-{levels_str}")
+
     for key, df in dfs.items():
-        file = f"{DIR_RESULTS}/{timestamp}_{key}_{mechanisms_str}.csv"
+
+        f = dir_results.split("/")
+        file = f"{dir_results}/{key}.csv"
         save_csv(df, file)
 
 def save_csv(df, file):
@@ -176,7 +177,7 @@ def kem_evaluation(
         "size-evaluation": df_size_evaluation,
     }
 
-    save_results(dfs=dfs, input_mechanisms=input_mechanisms)
+    save_results(dfs=dfs, input_mechanisms=input_mechanisms, levels=nist_levels)
 
 
 def sig_evaluation(
@@ -238,7 +239,7 @@ def sig_evaluation(
         "size-evaluation": df_size_evaluation,
     }
 
-    save_results(dfs=dfs, input_mechanisms=input_mechanisms)
+    save_results(dfs=dfs, input_mechanisms=input_mechanisms, levels=nist_levels, mechanisms_dict=combine_mechanisms)
 
 def main():
 
