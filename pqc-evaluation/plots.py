@@ -11,7 +11,7 @@ import utils
 def plot(
     df_all, 
     columns,
-    dir_graphics,
+    dir_graph,
     level=None, 
     xlabel=None, 
     ylabel=None,
@@ -108,7 +108,9 @@ def plot(
     filename = f"level_{level}" if level else "all_level"
 
     for ext in save_formats:
-        plt.savefig(f"{dir_graphics}/{filename}.{ext}", format=ext)
+        file = f"{dir_graph}/{filename}.{ext}"
+        plt.savefig(file, format=ext)    
+        print(f"Graph {file} was created")
 
     if show:
         plt.show()
@@ -118,7 +120,7 @@ def plot(
 
 def generate_plots_from_csv(
     csv_path,
-    dir_graphics,
+    dir_graph,
     variants_dict,
     columns,
     ylabel="Tempo (ms)",
@@ -138,7 +140,7 @@ def generate_plots_from_csv(
 
     Args:
         csv_path (str): Path to the CSV file containing the benchmark data.
-        dir_graphics (str): Directory where the plots will be saved.
+        dir_graph (str): Directory where the plots will be saved.
         variants_dict (dict): Dictionary mapping levels to lists of variants.
         columns (list[tuple]): List of tuples (value_column, error_column, label) representing 
             the data to plot.
@@ -162,7 +164,7 @@ def generate_plots_from_csv(
             df_subset,
             columns=columns,
             level=level,
-            dir_graphics=dir_graphics,
+            dir_graph=dir_graph,
             yscale=yscale,
             ylabel=ylabel,
             ylim=(1e-3, 1e4),

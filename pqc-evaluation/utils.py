@@ -4,14 +4,7 @@ import os
 from datetime import datetime
 
 DIR_RESULTS = "results"
-DIR_GRAPHICS = "graphics"
-
-def one_level(df_all, level, graphics):
-    for graphic in graphics:
-        if level != graphic['level']:
-            df_all = df_all.drop([i for i in graphic['mechanisms']])
-    return df_all
-
+DIR_GRAPH = "graph"
 
 def create_result_dirs(suffix=None):
     
@@ -20,11 +13,11 @@ def create_result_dirs(suffix=None):
     dir_name = f"{timestamp}_{suffix}" if suffix else timestamp
 
     dir_results = os.path.join(DIR_RESULTS, dir_name)
-    dir_graphics = os.path.join(dir_results, DIR_GRAPHICS)
+    dir_graph = os.path.join(dir_results, DIR_GRAPH)
 
-    os.makedirs(dir_graphics, exist_ok=True)
+    os.makedirs(dir_graph, exist_ok=True)
 
-    return dir_results, dir_graphics
+    return dir_results, dir_graph
 
 def get_variants_by_level(df, variant_dict):
     csv_variants = set(df.index.to_list())

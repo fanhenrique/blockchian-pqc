@@ -18,7 +18,7 @@ def save_results(dfs, input_mechanisms, levels, mechanisms_dict=None):
 
     levels_str = "-".join(map(str, levels))
 
-    dir_results, dir_graphics = utils.create_result_dirs(f"{mechanisms_str}_levels-{levels_str}")
+    dir_results, dir_graph = utils.create_result_dirs(f"{mechanisms_str}_levels-{levels_str}")
 
     for key, df in dfs.items():
 
@@ -30,7 +30,7 @@ def save_results(dfs, input_mechanisms, levels, mechanisms_dict=None):
             plots.generate_plots_from_csv(
                 csv_path=file,
                 variants_dict=mechanisms_dict,
-                dir_graphics=dir_graphics,
+                dir_graph=dir_graph,
                 columns = [
                     ("mean_keypair", "std_keypair", "Geração de chaves"),
                     ("mean_sign", "std_sign", "Assinatura"),
